@@ -3,6 +3,7 @@ import uuid
 import hmac
 import hashlib
 from datetime import datetime
+from typing import Optional
 from fastapi import FastAPI, UploadFile, File, Form, Request, Response, Depends, HTTPException, status
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -76,9 +77,7 @@ async def get_quota_status(request: Request, response: Response):
     """Kullanıcının kalan günlük soru hakkını sorgular."""
     ip = get_client_ip(request)
     dev_id = get_device_cookie(request, response)
-    # Sadece sorgulama amaçlı sahte bir kontrol
     allowed, remaining = check_and_use_quota(ip, dev_id)
-    # check_and_use_quota 1 düşürdüğü için hakkı geri iade etmeyelim, anlık kalan limit bilgisi verelim
     return {"daily_limit": DAILY_LIMIT, "remaining_quota": remaining}
 
 @app.post("/api/analyze")
@@ -86,10 +85,10 @@ async def analyze_question(
     request: Request,
     response: Response,
     image: UploadFile = File(...),
-    provider: str = Form(...),      # 'gpt', 'claude', 'gemini'
-    api_token: str = Form(...),     # Kullanıcının girdiği kişisel API anahtarı
-    grade: int = Form(9),           # 9, 10 veya 11
-    profile_id: str = Form(None)    # Varsa profil UUID
+    provider: str = Form(...),                  # 'gpt', 'claude', 'gemini'
+    api_token: str = Form(...),                 # Kullanıcının girdiği kişisel API anahtarı
+    grade: int = Form(9),                       # 9, 10 veya 11
+    profile_id: Optional[str] = Form(None)      # Varsa profil UUID (Düzeltildi)
 ):
     """
     Soru görselini alır, kotayı düşer, AI modeline gönderir,
@@ -147,9 +146,9 @@ async def analyze_question(
     }
 
 @app.post("/api/search")
-async def search_content(query: str = Form(...), grade: int = Form(None)):
+async def search_content(query: str = Form(...), grade: Optional[int] = Form(None)):
     """
-    Hem admin tarafından yüklenen MEB kitaplarında hem de internette arama yapar.
+    Hem admin tarafından yüklenen MEB kitaplarında hem de internette arama yapar. (Düzeltildi)
     """
     books_results = search_textbooks(query=query, grade=grade, limit=4)
     web_results = await search_web_educational(query=query, limit=3)
@@ -219,7 +218,7 @@ async def admin_stats():
 
 @app.get("/api/admin/backup", dependencies=[Depends(verify_admin)])
 async def download_backup():
-    """Oracle Free Tier sunucusu kapansa bile verilerin kaybolmaması için tek tıkla DB yedeği indirir."""
+    """Oracle Free Tier sunucusu kapansa bile verilerin kaybolmaması için DB yedeği indirir."""
     if os.path.exists(DB_PATH):
         return FileResponse(DB_PATH, filename="okulai_backup.db", media_type="application/octet-stream")
     raise HTTPException(status_code=404, detail="Veritabanı dosyası bulunamadı.")
