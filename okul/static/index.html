@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OkulAI - Maarif Modeli Soru Çözüm ve Analiz Asistanı</title>
+    <!-- Tailwind CSS (Modern ve hızlı tasarım için CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- GOOGLE ADSENSE KODU (Onay alınca pub-id'ni buraya yaz) -->
+    <!-- 
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-BURAYA_PUB_ID_GELECEK" crossorigin="anonymous"></script>
+    -->
+
+    <style>
+        .custom-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <!-- ÜST MENÜ (NAVBAR) -->
+    <header class="bg-indigo-600 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-graduation-cap text-2xl text-amber-300"></i>
+                <span class="font-bold text-xl tracking-tight">Okul<span class="text-amber-300">AI</span></span>
+                <span class="text-xs bg-indigo-700 px-2 py-0.5 rounded-full border border-indigo-400">Maarif Modeli</span>
+            </div>
+            <div class="flex items-center space-x-3 text-sm">
+                <!-- Günlük Kota Göstergesi -->
+                <div id="quotaBadge" class="bg-indigo-800/80 px-3 py-1 rounded-full border border-indigo-500/30 flex items-center gap-1.5">
+                    <i class="fa-solid fa-bolt text-amber-400"></i>
+                    <span>Kalan Hak: <strong id="quotaCount">...</strong></span>
+                </div>
+                <a href="/admin" class="text-xs bg-indigo-500 hover:bg-indigo-400 px-2 py-1 rounded transition">Admin</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ÜST REKLAM ALANI (ADSENSE BANNER) -->
+    <div class="max-w-5xl mx-auto w-full px-4 my-2 text-center">
+        <div class="bg-slate-200/60 border border-dashed border-slate-300 rounded-lg p-2 text-xs text-slate-400 min-h-[50px] flex items-center justify-center">
+            <!-- Google AdSense Üst Banner Alanı -->
+            <span>[ Reklam Alanı ]</span>
+        </div>
+    </div>
+
+    <!-- ANA İÇERİK -->
+    <main class="max-w-5xl mx-auto px-4 py-4 flex-grow w-full space-y-6">
+
+        <!-- 1. PROFİL & AI MODEL AYARI KARTI -->
+        <section class="custom-card p-5 border border-slate-100">
+            <div class="flex flex-wrap gap-4 items-center justify-between border-b pb-4 mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-lg">
+                        <i class="fa-solid fa-user-graduate"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-slate-900 leading-tight">Öğrenci Profili</h2>
+                        <p class="text-xs text-slate-500">Cihazına otomatik kaydedilir, üyelik gerektirmez.</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label class="text-xs font-semibold text-slate-600">Sınıf:</label>
+                    <select id="gradeSelect" class="bg-slate-100 border border-slate-200 text-sm font-semibold rounded-lg px-2.5 py-1.5 focus:outline-indigo-500">
+                        <option value="9">9. Sınıf (Maarif)</option>
+                        <option value="10">10. Sınıf (Maarif)</option>
+                        <option value="11">11. Sınıf (Maarif)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- AI Model ve Token Ayarları -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Yapay Zekâ Sağlayıcısı</label>
+                    <select id="providerSelect" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-indigo-400">
+                        <option value="gemini">Google Gemini 1.5 Flash (Önerilen / Çok Hızlı)</option>
+                        <option value="gpt">OpenAI GPT-4o-mini</option>
+                        <option value="claude">Anthropic Claude 3.5 Sonnet</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Kişisel API Anahtarın (Token)</label>
+                    <div class="relative">
+                        <input type="password" id="apiTokenInput" placeholder="AI sağlayıcından aldığın key..." class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 pr-10 focus:ring-2 focus:ring-indigo-400 text-sm">
+                        <button onclick="toggleTokenVisibility()" type="button" class="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600">
+                            <i class="fa-regular fa-eye" id="eyeIcon"></i>
+                        </button>
+                    </div>
+                    <span class="text-[11px] text-slate-400">Token tarayıcında saklanır, sunucuya kalıcı kaydedilmez.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. GÖRSEL SORU YÜKLEME VE ÇÖZÜM BÖLÜMÜ -->
+        <section class="custom-card p-6 border border-slate-100">
+            <h2 class="text-lg font-bold text-slate-900 mb-1 flex items-center gap-2">
+                <i class="fa-solid fa-camera text-indigo-600"></i>
+                Yanlış Yaptığın Soruyu Yükle
+            </h2>
+            <p class="text-xs text-slate-500 mb-4">iPad veya telefonundan sorunun net bir fotoğrafını çek veya galerinden seç.</p>
+
+            <form id="analyzeForm" class="space-y-4">
+                <div class="border-2 border-dashed border-indigo-200 hover:border-indigo-400 rounded-2xl p-6 text-center cursor-pointer transition bg-indigo-50/30" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="previewImage(event)">
+                    
+                    <div id="uploadPrompt" class="space-y-2">
+                        <div class="w-12 h-12 bg-white rounded-full shadow-sm text-indigo-500 flex items-center justify-center mx-auto text-xl">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                        </div>
+                        <div class="text-sm font-semibold text-slate-700">Fotoğraf Çek veya Galeriden Yükle</div>
+                        <p class="text-xs text-slate-400">PNG, JPG, HEIC desteklenir</p>
+                    </div>
+
+                    <div id="previewContainer" class="hidden">
+                        <img id="imagePreview" src="" alt="Soru Önizleme" class="max-h-64 mx-auto rounded-lg shadow-sm border border-slate-200">
+                        <p class="text-xs text-indigo-600 font-medium mt-2">Fotoğrafı değiştirmek için tıkla</p>
+                    </div>
+                </div>
+
+                <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-600/30 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>Analiz Et ve Eksiklerimi Bul</span>
+                </button>
+            </form>
+
+            <!-- YÜKLENİYOR SİMGESİ -->
+            <div id="loadingBox" class="hidden text-center py-8 space-y-3">
+                <div class="inline-block animate-spin text-3xl text-indigo-600">
+                    <i class="fa-solid fa-circle-notch"></i>
+                </div>
+                <p class="text-sm font-semibold text-slate-700">Maarif Modeli kazanımları taranıyor ve geçmiş hatalarınla karşılaştırılıyor...</p>
+            </div>
+
+            <!-- AI SONUÇ KARTLARI -->
+            <div id="resultBox" class="hidden mt-6 space-y-4 pt-6 border-t border-slate-100">
+                
+                <!-- Hata Tespiti & Hafıza Uyarısı (VURUCU KISIM) -->
+                <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl">
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-600 text-xl mt-0.5"></i>
+                        <div>
+                            <h3 class="font-bold text-amber-900 text-sm">Hata Riski ve Geçmiş Bağlantısı</h3>
+                            <p id="resErrorRisk" class="text-sm text-amber-800 mt-1 leading-relaxed"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Çözüm Adımları -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                    <h3 class="font-bold text-slate-900 text-sm mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-calculator text-indigo-600"></i>
+                        Adım Adım Maarif Çözümü
+                    </h3>
+                    <div id="resSolution" class="text-sm text-slate-700 leading-relaxed whitespace-pre-line"></div>
+                </div>
+
+                <!-- Müfredat Notu & Tavsiye -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                    <div class="bg-indigo-50/70 border border-indigo-100 rounded-xl p-3.5">
+                        <h4 class="font-bold text-indigo-900 text-xs mb-1">Müfredat / Beceri Kazanımı</h4>
+                        <p id="resCurriculum" class="text-xs text-indigo-800 leading-relaxed"></p>
+                    </div>
+                    <div class="bg-emerald-50/70 border border-emerald-100 rounded-xl p-3.5">
+                        <h4 class="font-bold text-emerald-900 text-xs mb-1">Öğretmen Tavsiyesi</h4>
+                        <p id="resAdvice" class="text-xs text-emerald-800 leading-relaxed"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. GEÇMİŞ HATALARIM (ÖĞRENCİ HAFIZASI) -->
+        <section class="custom-card p-5 border border-slate-100">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-indigo-600"></i>
+                    Önceki Hatalarım (AI Hafızası)
+                </h2>
+                <button onclick="loadMistakeHistory()" class="text-xs text-indigo-600 hover:underline">Yenile</button>
+            </div>
+            <div id="historyList" class="space-y-2 text-xs text-slate-500">
+                <p>Henüz kayıtlı bir soru geçmişin bulunmuyor.</p>
+            </div>
+        </section>
+
+        <!-- 4. DERS KİTABI VE MÜFREDAT KAYNAK ARAMA -->
+        <section class="custom-card p-5 border border-slate-100">
+            <h2 class="text-base font-bold text-slate-900 mb-1 flex items-center gap-2">
+                <i class="fa-solid fa-book-open text-indigo-600"></i>
+                MEB Ders Kitaplarında ve Web'de Ara
+            </h2>
+            <p class="text-xs text-slate-500 mb-3">Anlamadığın bir konuyu veya kavramı yazarak kitap sayfalarından bul.</p>
+
+            <div class="flex gap-2">
+                <input type="text" id="searchInput" placeholder="Örn: Hücre bölünmesi, Fonksiyonlar, Mol kavramı..." class="flex-grow bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-400">
+                <button onclick="performSearch()" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition flex items-center gap-2">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <span>Ara</span>
+                </button>
+            </div>
+
+            <div id="searchResults" class="mt-4 space-y-3 hidden">
+                <!-- Arama sonuçları buraya dökülecek -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ALT REKLAM ALANI & FOOTER -->
+    <footer class="mt-auto bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400 space-y-3">
+        <div class="max-w-5xl mx-auto px-4">
+            <!-- Alt AdSense banner yeri -->
+            <div class="bg-slate-100 border border-dashed border-slate-300 rounded p-2 text-slate-400 min-h-[45px] flex items-center justify-center mb-4">
+                <span>[ Alt Banner Reklam Alanı ]</span>
+            </div>
+            <p>© OkulAI - Türkiye Yüzyılı Maarif Modeli Uyumlu Eğitim Platformu</p>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT KODLARI (TÜM ETKİLEŞİM VE LOCALSTORAGE YÖNETİMİ) -->
+    <script>
+        // Profil ID'sini cihazda (localStorage) tut
+        let profileId = localStorage.getItem("okulai_profile_id");
+        if (!profileId) {
+            profileId = "stu_" + Math.random().toString(36).substring(2, 10);
+            localStorage.setItem("okulai_profile_id", profileId);
+        }
+
+        // Sayfa açıldığında kayıtlı ayarları geri yükle
+        document.addEventListener("DOMContentLoaded", () => {
+            const savedGrade = localStorage.getItem("okulai_grade");
+            if (savedGrade) document.getElementById("gradeSelect").value = savedGrade;
+
+            const savedProvider = localStorage.getItem("okulai_provider");
+            if (savedProvider) document.getElementById("providerSelect").value = savedProvider;
+
+            const savedToken = localStorage.getItem("okulai_api_token");
+            if (savedToken) document.getElementById("apiTokenInput").value = savedToken;
+
+            updateQuotaBadge();
+            loadMistakeHistory();
+        });
+
+        // Ayar değişikliklerini kaydet
+        document.getElementById("gradeSelect").addEventListener("change", (e) => localStorage.setItem("okulai_grade", e.target.value));
+        document.getElementById("providerSelect").addEventListener("change", (e) => localStorage.setItem("okulai_provider", e.target.value));
+        document.getElementById("apiTokenInput").addEventListener("input", (e) => localStorage.setItem("okulai_api_token", e.target.value.trim()));
+
+        function toggleTokenVisibility() {
+            const input = document.getElementById("apiTokenInput");
+            const icon = document.getElementById("eyeIcon");
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.replace("fa-eye", "fa-eye-slash");
+            } else {
+                input.type = "password";
+                icon.classList.replace("fa-eye-slash", "fa-eye");
+            }
+        }
+
+        // Kota durumunu getir
+        async function updateQuotaBadge() {
+            try {
+                const res = await fetch("/api/quota");
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById("quotaCount").innerText = data.remaining_quota;
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        // Görsel Seçme ve Önizleme
+        let selectedFile = null;
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedFile = file;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById("imagePreview").src = e.target.result;
+                    document.getElementById("uploadPrompt").classList.add("hidden");
+                    document.getElementById("previewContainer").classList.remove("hidden");
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Form Gönderme ve Analiz
+        document.getElementById("analyzeForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (!selectedFile) {
+                alert("Lütfen önce bir soru görseli seçin veya çekin!");
+                return;
+            }
+
+            const token = document.getElementById("apiTokenInput").value.trim();
+            if (!token) {
+                alert("Lütfen yukarıdaki alana seçtiğiniz yapay zekanın API Token'ını girin!");
+                return;
+            }
+
+            const provider = document.getElementById("providerSelect").value;
+            const grade = document.getElementById("gradeSelect").value;
+
+            const formData = new FormData();
+            formData.append("image", selectedFile);
+            formData.append("provider", provider);
+            formData.append("api_token", token);
+            formData.append("grade", grade);
+            formData.append("profile_id", profileId);
+
+            document.getElementById("loadingBox").classList.remove("hidden");
+            document.getElementById("resultBox").classList.add("hidden");
+            document.getElementById("submitBtn").disabled = true;
+
+            try {
+                const res = await fetch("/api/analyze", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.detail || "Analiz sırasında bir hata meydana geldi.");
+                }
+
+                // Kalan kotayı güncelle
+                document.getElementById("quotaCount").innerText = data.remaining_quota;
+
+                // Sonuçları bas
+                const a = data.analysis;
+                document.getElementById("resErrorRisk").innerText = a.identified_mistake_risk || "Eksik bilgi tespit edilmedi.";
+                document.getElementById("resSolution").innerText = a.step_by_step_solution || "";
+                document.getElementById("resCurriculum").innerText = a.maarif_curriculum_note || "";
+                document.getElementById("resAdvice").innerText = a.advice || "";
+
+                document.getElementById("resultBox").classList.remove("hidden");
+                loadMistakeHistory(); // Hafızayı yenile
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                document.getElementById("loadingBox").classList.add("hidden");
+                document.getElementById("submitBtn").disabled = false;
+            }
+        });
+
+        // Geçmiş Hataları Çek
+        async function loadMistakeHistory() {
+            try {
+                const res = await fetch(`/api/profile/mistakes?profile_id=${profileId}`);
+                if (res.ok) {
+                    const mistakes = await res.json();
+                    const list = document.getElementById("historyList");
+                    if (mistakes.length === 0) {
+                        list.innerHTML = `<p class="text-slate-400">Henüz kaydedilmiş bir hata yok.</p>`;
+                        return;
+                    }
+                    list.innerHTML = mistakes.map(m => `
+                        <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg">
+                            <div class="flex justify-between font-bold text-slate-700">
+                                <span>${m.subject || 'Ders'} (${m.grade}. Sınıf)</span>
+                                <span class="text-[10px] text-slate-400">${m.created_at}</span>
+                            </div>
+                            <p class="text-slate-600 mt-1">${m.student_error}</p>
+                        </div>
+                    `).join("");
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        // Ders Kitabı ve İnternet Araması
+        async function performSearch() {
+            const query = document.getElementById("searchInput").value.trim();
+            const grade = document.getElementById("gradeSelect").value;
+            if (!query) return;
+
+            const resultsDiv = document.getElementById("searchResults");
+            resultsDiv.classList.remove("hidden");
+            resultsDiv.innerHTML = `<div class="text-center py-4 text-xs text-slate-400"><i class="fa-solid fa-spinner animate-spin"></i> Kitaplar taranıyor...</div>`;
+
+            const form = new FormData();
+            form.append("query", query);
+            form.append("grade", grade);
+
+            try {
+                const res = await fetch("/api/search", { method: "POST", body: form });
+                const data = await res.json();
+
+                let html = "";
+                if (data.textbook_results && data.textbook_results.length > 0) {
+                    html += `<h4 class="font-bold text-xs text-indigo-700 uppercase tracking-wider mb-2">MEB Ders Kitabı Eşleşmeleri</h4>`;
+                    data.textbook_results.forEach(b => {
+                        html += `
+                            <div class="p-3 bg-indigo-50/40 border border-indigo-100 rounded-lg text-xs mb-2">
+                                <div class="font-bold text-slate-800">${b.book_name} (Sayfa ${b.page}) - ${b.grade}. Sınıf</div>
+                                <p class="text-slate-600 mt-1">${b.snippet}</p>
+                            </div>
+                        `;
+                    });
+                }
+
+                if (data.web_results && data.web_results.length > 0) {
+                    html += `<h4 class="font-bold text-xs text-slate-500 uppercase tracking-wider my-2">Web Maarif Kaynakları</h4>`;
+                    data.web_results.forEach(w => {
+                        html += `
+                            <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs mb-2">
+                                <a href="${w.link}" target="_blank" class="font-bold text-indigo-600 hover:underline block">${w.title}</a>
+                                <p class="text-slate-500 mt-0.5">${w.snippet}</p>
+                            </div>
+                        `;
+                    });
+                }
+
+                if (!html) {
+                    html = `<p class="text-xs text-slate-400 py-2">Eşleşen sonuç bulunamadı.</p>`;
+                }
+                resultsDiv.innerHTML = html;
+            } catch (e) {
+                resultsDiv.innerHTML = `<p class="text-xs text-red-500">Arama yapılırken hata oluştu.</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
