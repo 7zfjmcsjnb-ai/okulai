@@ -4,7 +4,16 @@ from contextlib import contextmanager
 from datetime import datetime
 
 DATA_DIR = os.getenv("DATA_DIR", "./data")
-os.makedirs(DATA_DIR, exist_ok=True)
+try:
+    os.makedirs(DATA_DIR, exist_ok=True)
+    _test_p = os.path.join(DATA_DIR, ".write_test")
+    with open(_test_p, "w") as f:
+        f.write("1")
+    os.remove(_test_p)
+except Exception:
+    DATA_DIR = "/tmp"
+    os.makedirs(DATA_DIR, exist_ok=True)
+
 DB_PATH = os.path.join(DATA_DIR, "okulai.db")
 
 def get_db():
@@ -27,8 +36,6 @@ def db_session():
 def init_db():
     with db_session() as conn:
         cursor = conn.cursor()
-        
-        # 1. Profiller (Kayıt olma zorunluluğu yok, cihaz bazlı profil tutulabilir)
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS profiles (
             id TEXT PRIMARY KEY,
@@ -37,8 +44,6 @@ def init_db():
             created_at TEXT
         )
         """)
-        
-        # 2. Hatalar ve Geçmiş Sorular (AI hafızası için)
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS mistakes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -51,8 +56,6 @@ def init_db():
             created_at TEXT
         )
         """)
-        
-        # 3. Günlük Kota (IP ve Cihaz Çerezi bazlı)
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS daily_quotas (
             tracking_key TEXT PRIMARY KEY,
@@ -60,8 +63,6 @@ def init_db():
             last_date TEXT
         )
         """)
-        
-        # 4. Yüklenen MEB Ders Kitapları (Sayfa ve Paragraf İndeksi)
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS book_pages (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -72,8 +73,6 @@ def init_db():
             content TEXT
         )
         """)
-        
-        # 5. Admin ve Sistem Ayarları
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS settings (
             key TEXT PRIMARY KEY,
@@ -81,5 +80,4 @@ def init_db():
         )
         """)
 
-# Veritabanını otomatik ilklendir
 init_db()
