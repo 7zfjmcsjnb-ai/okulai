@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OkulAI - Yönetim Paneli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen p-4 flex flex-col items-center">
+
+    <!-- 1. GİRİŞ FORMU (Giriş yapılmamışsa görünür) -->
+    <div id="loginSection" class="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 mt-12 border border-slate-200">
+        <div class="text-center mb-6">
+            <div class="w-12 h-12 bg-indigo-600 text-white rounded-xl flex items-center justify-center mx-auto mb-2 text-xl">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <h1 class="text-xl font-bold text-slate-900">Admin Girişi</h1>
+            <p class="text-xs text-slate-500">Yalnızca yetkili yönetici erişebilir.</p>
+        </div>
+
+        <form id="adminLoginForm" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Kullanıcı Adı</label>
+                <input type="text" id="adminUser" required class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-400">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Şifre</label>
+                <input type="password" id="adminPass" required class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-400">
+            </div>
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-lg transition text-sm">Giriş Yap</button>
+        </form>
+    </div>
+
+    <!-- 2. ADMİN YÖNETİM KONTROL PANELİ (Giriş yapılınca açılır) -->
+    <div id="dashboardSection" class="hidden w-full max-w-4xl space-y-6">
+        
+        <!-- Üst Başlık & Çıkış -->
+        <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+            <div>
+                <h1 class="font-bold text-lg text-slate-900">OkulAI Yönetim Paneli</h1>
+                <p class="text-xs text-slate-500">Müfredat kitapları ve sistem ayarları</p>
+            </div>
+            <div class="flex gap-2">
+                <a href="/" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg font-medium transition">Siteye Dön</a>
+                <button onclick="logoutAdmin()" class="text-xs bg-rose-50 text-rose-600 hover:bg-rose-100 px-3 py-2 rounded-lg font-medium transition">Çıkış</button>
+            </div>
+        </div>
+
+        <!-- İstatistik Kartları -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-camera"></i>
+                </div>
+                <div>
+                    <div class="text-xs text-slate-400 font-semibold">Çözülen Soru Sayısı</div>
+                    <div id="statQuestions" class="text-xl font-bold text-slate-800">0</div>
+                </div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-book"></i>
+                </div>
+                <div>
+                    <div class="text-xs text-slate-400 font-semibold">Yüklü Ders Kitabı</div>
+                    <div id="statBooks" class="text-xl font-bold text-slate-800">0</div>
+                </div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <div>
+                    <div class="text-xs text-slate-400 font-semibold">Aktif IP/Cihaz</div>
+                    <div id="statUsers" class="text-xl font-bold text-slate-800">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MEB Ders Kitabı Yükleme Alanı -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <h2 class="text-base font-bold text-slate-900 mb-1 flex items-center gap-2">
+                <i class="fa-solid fa-file-pdf text-indigo-600"></i>
+                MEB Maarif Modeli Ders Kitabı (PDF) Yükle
+            </h2>
+            <p class="text-xs text-slate-500 mb-4">Safari'den indirdiğin MEB kitap PDF'ini yükle; sistem sayfaları otomatik parçalayıp arama motoruna eklesin.</p>
+
+            <form id="uploadBookForm" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Kitap Adı</label>
+                        <input type="text" id="bookName" placeholder="Örn: 9. Sınıf Biyoloji MEB" required class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Sınıf</label>
+                        <select id="bookGrade" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm">
+                            <option value="9">9. Sınıf</option>
+                            <option value="10">10. Sınıf</option>
+                            <option value="11">11. Sınıf</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Ders / Alan</label>
+                        <input type="text" id="bookSubject" placeholder="Örn: Biyoloji, Matematik" required class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">PDF Dosyası</label>
+                    <input type="file" id="bookFile" accept="application/pdf" required class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                </div>
+
+                <button type="submit" id="uploadBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-lg text-sm transition flex items-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span>Kitabı İndeksle ve Sisteme Kat</span>
+                </button>
+            </form>
+            <div id="uploadStatus" class="text-xs mt-2 font-semibold"></div>
+        </div>
+
+        <!-- Oracle Free Tier Güvenlik Yedeği -->
+        <div class="bg-amber-50 border border-amber-200 p-5 rounded-2xl flex flex-wrap justify-between items-center gap-4">
+            <div>
+                <h3 class="font-bold text-amber-900 text-sm">Veritabanı Yedeği (Kritik)</h3>
+                <p class="text-xs text-amber-700 mt-0.5">Oracle ücretsiz sunucular bazen kapanabilir. Soru geçmişi ve indekslerin kaybolmaması için arada bir yedeği iPad'ine indir.</p>
+            </div>
+            <a href="/api/admin/backup" download class="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs py-2.5 px-4 rounded-lg transition flex items-center gap-2">
+                <i class="fa-solid fa-download"></i>
+                <span>Yedeği İndir (.db)</span>
+            </a>
+        </div>
+
+    </div>
+
+    <script>
+        const loginSection = document.getElementById("loginSection");
+        const dashboardSection = document.getElementById("dashboardSection");
+
+        // Sayfa açıldığında giriş yapılmış mı kontrol et
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchStats();
+        });
+
+        // Giriş Yap
+        document.getElementById("adminLoginForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const form = new FormData();
+            form.append("username", document.getElementById("adminUser").value.trim());
+            form.append("password", document.getElementById("adminPass").value.trim());
+
+            try {
+                const res = await fetch("/api/admin/login", { method: "POST", body: form });
+                const data = await res.json();
+                if (res.ok) {
+                    sessionStorage.setItem("admin_logged", "true");
+                    loginSection.classList.add("hidden");
+                    dashboardSection.classList.remove("hidden");
+                    fetchStats();
+                } else {
+                    alert(data.detail || "Giriş başarısız!");
+                }
+            } catch (err) {
+                alert("Sunucuya bağlanılamadı.");
+            }
+        });
+
+        // Çıkış Yap
+        function logoutAdmin() {
+            document.cookie = "okulai_admin_token=; Max-Age=0; path=/;";
+            location.reload();
+        }
+
+        // İstatistikleri Getir
+        async function fetchStats() {
+            try {
+                const res = await fetch("/api/admin/stats");
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById("statQuestions").innerText = data.total_analyzed_questions;
+                    document.getElementById("statBooks").innerText = data.indexed_books;
+                    document.getElementById("statUsers").innerText = data.tracked_users_today;
+                    loginSection.classList.add("hidden");
+                    dashboardSection.classList.remove("hidden");
+                }
+            } catch (e) {
+                // Giriş yapılmamış
+            }
+        }
+
+        // Kitap PDF Yükle
+        document.getElementById("uploadBookForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const file = document.getElementById("bookFile").files[0];
+            if (!file) return;
+
+            const status = document.getElementById("uploadStatus");
+            const btn = document.getElementById("uploadBtn");
+            status.innerHTML = `<span class="text-indigo-600"><i class="fa-solid fa-spinner animate-spin"></i> Kitap PDF sayfaları taranıyor ve indeksleniyor (Birkaç dakika sürebilir)...</span>`;
+            btn.disabled = true;
+
+            const form = new FormData();
+            form.append("book_file", file);
+            form.append("book_name", document.getElementById("bookName").value);
+            form.append("grade", document.getElementById("bookGrade").value);
+            form.append("subject", document.getElementById("bookSubject").value);
+
+            try {
+                const res = await fetch("/api/admin/upload-book", { method: "POST", body: form });
+                const data = await res.json();
+                if (res.ok) {
+                    status.innerHTML = `<span class="text-emerald-600">✓ Kitap başarıyla yüklendi ve indekslendi!</span>`;
+                    document.getElementById("uploadBookForm").reset();
+                    fetchStats();
+                } else {
+                    status.innerHTML = `<span class="text-rose-600">Hata: ${data.detail}</span>`;
+                }
+            } catch (err) {
+                status.innerHTML = `<span class="text-rose-600">Yükleme başarısız oldu. Dosya boyutu büyük olabilir.</span>`;
+            } finally {
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
