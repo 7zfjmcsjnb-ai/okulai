@@ -4,15 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OkulAI - Maarif Modeli Soru Çözüm ve Analiz Asistanı</title>
-    <!-- Tailwind CSS (Modern ve hızlı tasarım için CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    
-    <!-- GOOGLE ADSENSE KODU (Onay alınca pub-id'ni buraya yaz) -->
-    <!-- 
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-BURAYA_PUB_ID_GELECEK" crossorigin="anonymous"></script>
-    -->
-
     <style>
         .custom-card {
             background: #ffffff;
@@ -23,37 +16,41 @@
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
 
-    <!-- ÜST MENÜ (NAVBAR) -->
-    <header class="bg-indigo-600 text-white shadow-md sticky top-0 z-50">
+    <!-- ÜST MENÜ -->
+    <header class="bg-indigo-600 text-white shadow-md sticky top-0 z-40">
         <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-2">
                 <i class="fa-solid fa-graduation-cap text-2xl text-amber-300"></i>
                 <span class="font-bold text-xl tracking-tight">Okul<span class="text-amber-300">AI</span></span>
-                <span class="text-xs bg-indigo-700 px-2 py-0.5 rounded-full border border-indigo-400">Maarif Modeli</span>
+                <span class="text-[11px] bg-indigo-700 px-2 py-0.5 rounded-full border border-indigo-400">Maarif Modeli</span>
             </div>
-            <div class="flex items-center space-x-3 text-sm">
-                <!-- Günlük Kota Göstergesi -->
-                <div id="quotaBadge" class="bg-indigo-800/80 px-3 py-1 rounded-full border border-indigo-500/30 flex items-center gap-1.5">
+            <div class="flex items-center space-x-2 sm:space-x-3 text-xs sm:text-sm">
+                <!-- Hak Durumu -->
+                <div id="quotaBadge" class="bg-indigo-800 px-2.5 py-1 rounded-full border border-indigo-500/40 flex items-center gap-1.5">
                     <i class="fa-solid fa-bolt text-amber-400"></i>
-                    <span>Kalan Hak: <strong id="quotaCount">...</strong></span>
+                    <span>Hak: <strong id="quotaCount">...</strong></span>
                 </div>
-                <a href="/admin" class="text-xs bg-indigo-500 hover:bg-indigo-400 px-2 py-1 rounded transition">Admin</a>
+                <!-- Reklam İzle Butonu -->
+                <button onclick="openRewardAdModal()" class="bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold px-2.5 py-1 rounded-full transition flex items-center gap-1 shadow-sm">
+                    <i class="fa-solid fa-gift"></i>
+                    <span>+5 Hak</span>
+                </button>
+                <a href="/admin" class="bg-indigo-500 hover:bg-indigo-400 px-2 py-1 rounded transition">Admin</a>
             </div>
         </div>
     </header>
 
-    <!-- ÜST REKLAM ALANI (ADSENSE BANNER) -->
+    <!-- ÜST REKLAM ALANI -->
     <div class="max-w-5xl mx-auto w-full px-4 my-2 text-center">
-        <div class="bg-slate-200/60 border border-dashed border-slate-300 rounded-lg p-2 text-xs text-slate-400 min-h-[50px] flex items-center justify-center">
-            <!-- Google AdSense Üst Banner Alanı -->
-            <span>[ Reklam Alanı ]</span>
+        <div class="bg-slate-200/60 border border-dashed border-slate-300 rounded-lg p-2 text-xs text-slate-400 min-h-[48px] flex items-center justify-center">
+            <span>[ Google AdSense Banner ]</span>
         </div>
     </div>
 
     <!-- ANA İÇERİK -->
-    <main class="max-w-5xl mx-auto px-4 py-4 flex-grow w-full space-y-6">
+    <main class="max-w-5xl mx-auto px-4 py-3 flex-grow w-full space-y-5">
 
-        <!-- 1. PROFİL & AI MODEL AYARI KARTI -->
+        <!-- 1. PROFİL & AI MODEL AYARI -->
         <section class="custom-card p-5 border border-slate-100">
             <div class="flex flex-wrap gap-4 items-center justify-between border-b pb-4 mb-4">
                 <div class="flex items-center gap-3">
@@ -62,7 +59,7 @@
                     </div>
                     <div>
                         <h2 class="font-bold text-slate-900 leading-tight">Öğrenci Profili</h2>
-                        <p class="text-xs text-slate-500">Cihazına otomatik kaydedilir, üyelik gerektirmez.</p>
+                        <p class="text-xs text-slate-500">Üyelik gerekmez, hafıza bu cihaza kaydedilir.</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
@@ -75,51 +72,71 @@
                 </div>
             </div>
 
-            <!-- AI Model ve Token Ayarları -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1">Yapay Zekâ Sağlayıcısı</label>
-                    <select id="providerSelect" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 focus:ring-2 focus:ring-indigo-400">
-                        <option value="gemini">Google Gemini 1.5 Flash (Önerilen / Çok Hızlı)</option>
-                        <option value="gpt">OpenAI GPT-4o-mini</option>
-                        <option value="claude">Anthropic Claude 3.5 Sonnet</option>
-                    </select>
+            <!-- AI Mod Seçimi (Sitenin Kendi AI'si vs Kendi Tokenim) -->
+            <div class="space-y-3">
+                <div class="flex gap-2 p-1 bg-slate-100 rounded-xl text-xs sm:text-sm font-medium">
+                    <button type="button" id="modeDefaultBtn" onclick="switchAiMode('default')" class="flex-1 py-2 rounded-lg bg-white shadow-sm font-bold text-indigo-600 transition flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-robot"></i>
+                        <span>OkulAI Varsayılan (Günlük 10 Hak)</span>
+                    </button>
+                    <button type="button" id="modeCustomBtn" onclick="switchAiMode('custom')" class="flex-1 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-key"></i>
+                        <span>Kendi API Key'im (Sınırsız)</span>
+                    </button>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1">Kişisel API Anahtarın (Token)</label>
-                    <div class="relative">
-                        <input type="password" id="apiTokenInput" placeholder="AI sağlayıcından aldığın key..." class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 pr-10 focus:ring-2 focus:ring-indigo-400 text-sm">
-                        <button onclick="toggleTokenVisibility()" type="button" class="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600">
-                            <i class="fa-regular fa-eye" id="eyeIcon"></i>
-                        </button>
+
+                <!-- Kendi Token Alanı (Gizlenebilir) -->
+                <div id="customKeyBox" class="hidden grid grid-cols-1 md:grid-cols-2 gap-3 text-sm pt-2">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Yapay Zekâ Sağlayıcısı</label>
+                        <select id="providerSelect" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-400">
+                            <option value="gemini">Google Gemini 1.5 Flash (Önerilen / Bedava)</option>
+                            <option value="gpt">OpenAI GPT-4o-mini</option>
+                            <option value="claude">Anthropic Claude 3.5 Sonnet</option>
+                        </select>
                     </div>
-                    <span class="text-[11px] text-slate-400">Token tarayıcında saklanır, sunucuya kalıcı kaydedilmez.</span>
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-xs font-bold text-slate-600">Kişisel API Anahtarın (Token)</label>
+                            <button type="button" onclick="openKeyGuideModal()" class="text-[11px] text-indigo-600 hover:underline font-bold flex items-center gap-1">
+                                <i class="fa-solid fa-circle-question"></i>
+                                <span>Nasıl Alınır? (Rehber)</span>
+                            </button>
+                        </div>
+                        <div class="relative">
+                            <input type="password" id="apiTokenInput" placeholder="AI sağlayıcından aldığın key..." class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 pr-10 text-sm focus:ring-2 focus:ring-indigo-400">
+                            <button onclick="toggleTokenVisibility()" type="button" class="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600">
+                                <i class="fa-regular fa-eye" id="eyeIcon"></i>
+                            </button>
+                        </div>
+                        <p class="text-[11px] text-emerald-600 font-medium mt-1">✓ Kendi key'ini girdiğinde tüm soru çözümleri tamamen sınırsızdır.</p>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- 2. GÖRSEL SORU YÜKLEME VE ÇÖZÜM BÖLÜMÜ -->
-        <section class="custom-card p-6 border border-slate-100">
+        <!-- 2. GÖRSEL SORU YÜKLEME VE ANALİZ -->
+        <section class="custom-card p-5 sm:p-6 border border-slate-100">
             <h2 class="text-lg font-bold text-slate-900 mb-1 flex items-center gap-2">
                 <i class="fa-solid fa-camera text-indigo-600"></i>
                 Yanlış Yaptığın Soruyu Yükle
             </h2>
-            <p class="text-xs text-slate-500 mb-4">iPad veya telefonundan sorunun net bir fotoğrafını çek veya galerinden seç.</p>
+            <p class="text-xs text-slate-500 mb-4">iPad veya telefonundan sorunun fotoğrafını çek veya galerinden seç.</p>
 
             <form id="analyzeForm" class="space-y-4">
-                <div class="border-2 border-dashed border-indigo-200 hover:border-indigo-400 rounded-2xl p-6 text-center cursor-pointer transition bg-indigo-50/30" onclick="document.getElementById('fileInput').click()">
+                <div class="border-2 border-dashed border-indigo-200 hover:border-indigo-400 rounded-2xl p-6 text-center cursor-pointer transition bg-indigo-50/20" onclick="document.getElementById('fileInput').click()">
                     <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="previewImage(event)">
                     
                     <div id="uploadPrompt" class="space-y-2">
                         <div class="w-12 h-12 bg-white rounded-full shadow-sm text-indigo-500 flex items-center justify-center mx-auto text-xl">
                             <i class="fa-solid fa-cloud-arrow-up"></i>
                         </div>
-                        <div class="text-sm font-semibold text-slate-700">Fotoğraf Çek veya Galeriden Yükle</div>
+                        <div class="text-sm font-semibold text-slate-700">Fotoğraf Çek veya Galeriden Seç</div>
                         <p class="text-xs text-slate-400">PNG, JPG, HEIC desteklenir</p>
                     </div>
 
                     <div id="previewContainer" class="hidden">
-                        <img id="imagePreview" src="" alt="Soru Önizleme" class="max-h-64 mx-auto rounded-lg shadow-sm border border-slate-200">
+                        <img id="imagePreview" src="" alt="Önizleme" class="max-h-64 mx-auto rounded-lg shadow-sm border border-slate-200">
                         <p class="text-xs text-indigo-600 font-medium mt-2">Fotoğrafı değiştirmek için tıkla</p>
                     </div>
                 </div>
@@ -130,7 +147,6 @@
                 </button>
             </form>
 
-            <!-- YÜKLENİYOR SİMGESİ -->
             <div id="loadingBox" class="hidden text-center py-8 space-y-3">
                 <div class="inline-block animate-spin text-3xl text-indigo-600">
                     <i class="fa-solid fa-circle-notch"></i>
@@ -140,8 +156,6 @@
 
             <!-- AI SONUÇ KARTLARI -->
             <div id="resultBox" class="hidden mt-6 space-y-4 pt-6 border-t border-slate-100">
-                
-                <!-- Hata Tespiti & Hafıza Uyarısı (VURUCU KISIM) -->
                 <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl">
                     <div class="flex items-start gap-3">
                         <i class="fa-solid fa-triangle-exclamation text-amber-600 text-xl mt-0.5"></i>
@@ -152,7 +166,6 @@
                     </div>
                 </div>
 
-                <!-- Çözüm Adımları -->
                 <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
                     <h3 class="font-bold text-slate-900 text-sm mb-2 flex items-center gap-2">
                         <i class="fa-solid fa-calculator text-indigo-600"></i>
@@ -161,7 +174,6 @@
                     <div id="resSolution" class="text-sm text-slate-700 leading-relaxed whitespace-pre-line"></div>
                 </div>
 
-                <!-- Müfredat Notu & Tavsiye -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                     <div class="bg-indigo-50/70 border border-indigo-100 rounded-xl p-3.5">
                         <h4 class="font-bold text-indigo-900 text-xs mb-1">Müfredat / Beceri Kazanımı</h4>
@@ -175,7 +187,7 @@
             </div>
         </section>
 
-        <!-- 3. GEÇMİŞ HATALARIM (ÖĞRENCİ HAFIZASI) -->
+        <!-- 3. GEÇMİŞ HATALARIM -->
         <section class="custom-card p-5 border border-slate-100">
             <div class="flex justify-between items-center mb-3">
                 <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
@@ -189,50 +201,114 @@
             </div>
         </section>
 
-        <!-- 4. DERS KİTABI VE MÜFREDAT KAYNAK ARAMA -->
+        <!-- 4. DERS KİTABI VE WEB ARAMA -->
         <section class="custom-card p-5 border border-slate-100">
             <h2 class="text-base font-bold text-slate-900 mb-1 flex items-center gap-2">
                 <i class="fa-solid fa-book-open text-indigo-600"></i>
-                MEB Ders Kitaplarında ve Web'de Ara
+                MEB Kitaplarında ve Web'de Ara
             </h2>
-            <p class="text-xs text-slate-500 mb-3">Anlamadığın bir konuyu veya kavramı yazarak kitap sayfalarından bul.</p>
-
-            <div class="flex gap-2">
+            <div class="flex gap-2 mt-3">
                 <input type="text" id="searchInput" placeholder="Örn: Hücre bölünmesi, Fonksiyonlar, Mol kavramı..." class="flex-grow bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-400">
-                <button onclick="performSearch()" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition flex items-center gap-2">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <span>Ara</span>
+                <button onclick="performSearch()" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition">Ara</button>
+            </div>
+            <div id="searchResults" class="mt-4 space-y-3 hidden"></div>
+        </section>
+    </main>
+
+    <!-- 1. POPUP: API KEY ALMA REHBERİ (MODAL) -->
+    <div id="keyGuideModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-5 sm:p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-key text-amber-500"></i>
+                    Ücretsiz API Key Nasıl Alınır?
+                </h3>
+                <button onclick="closeKeyGuideModal()" class="text-slate-400 hover:text-slate-600 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
-            <div id="searchResults" class="mt-4 space-y-3 hidden">
-                <!-- Arama sonuçları buraya dökülecek -->
+            <!-- Google Gemini (Tamamen Bedava) -->
+            <div class="bg-indigo-50/70 border border-indigo-200 rounded-xl p-3.5 space-y-2 text-xs">
+                <div class="flex justify-between items-center">
+                    <strong class="text-indigo-900 text-sm flex items-center gap-1.5">
+                        <i class="fa-brands fa-google text-blue-500"></i> Google Gemini 1.5 (ÖNERİLEN - BEDAVA)
+                    </strong>
+                    <span class="bg-emerald-100 text-emerald-700 font-bold px-2 py-0.5 rounded text-[10px]">Kartsız Bedava</span>
+                </div>
+                <p class="text-slate-600 leading-relaxed">Google, öğrencilere ve geliştiricilere günde yüzlerce soruyu <strong>tamamen ücretsiz</strong> sunar. Kredi kartı istemez.</p>
+                <ol class="list-decimal list-inside text-slate-700 space-y-1 font-medium">
+                    <li><a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-indigo-600 font-bold underline">aistudio.google.com/app/apikey</a> linkine tıkla.</li>
+                    <li>Normal Gmail hesabınla oturum aç.</li>
+                    <li>Mavi <strong>"Create API Key"</strong> butonuna bas.</li>
+                    <li>Çıkan anahtarı kopyala ve OkulAI'deki kutuya yapıştır.</li>
+                </ol>
             </div>
-        </section>
 
-    </main>
-
-    <!-- ALT REKLAM ALANI & FOOTER -->
-    <footer class="mt-auto bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400 space-y-3">
-        <div class="max-w-5xl mx-auto px-4">
-            <!-- Alt AdSense banner yeri -->
-            <div class="bg-slate-100 border border-dashed border-slate-300 rounded p-2 text-slate-400 min-h-[45px] flex items-center justify-center mb-4">
-                <span>[ Alt Banner Reklam Alanı ]</span>
+            <!-- OpenAI GPT -->
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1.5 text-xs">
+                <strong class="text-slate-900 text-sm flex items-center gap-1.5">
+                    <i class="fa-solid fa-microchip text-slate-700"></i> OpenAI (ChatGPT - GPT-4o)
+                </strong>
+                <ol class="list-decimal list-inside text-slate-600 space-y-1">
+                    <li><a href="https://platform.openai.com/api-keys" target="_blank" class="text-indigo-600 underline font-semibold">platform.openai.com/api-keys</a> sayfasına git.</li>
+                    <li>ChatGPT hesabınla giriş yap ➔ <strong>"Create new secret key"</strong> de.</li>
+                </ol>
             </div>
-            <p>© OkulAI - Türkiye Yüzyılı Maarif Modeli Uyumlu Eğitim Platformu</p>
+
+            <!-- Anthropic Claude -->
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1.5 text-xs">
+                <strong class="text-slate-900 text-sm flex items-center gap-1.5">
+                    <i class="fa-solid fa-brain text-amber-600"></i> Anthropic Claude
+                </strong>
+                <ol class="list-decimal list-inside text-slate-600 space-y-1">
+                    <li><a href="https://console.anthropic.com/settings/keys" target="_blank" class="text-indigo-600 underline font-semibold">console.anthropic.com</a> adresine git.</li>
+                    <li>Üye ol ve <strong>"Create Key"</strong> butonuna tıkla.</li>
+                </ol>
+            </div>
+
+            <button onclick="closeKeyGuideModal()" class="w-full bg-slate-900 text-white font-bold py-2.5 rounded-xl text-xs hover:bg-slate-800 transition">Anladım, Kapat</button>
         </div>
-    </footer>
+    </div>
 
-    <!-- JAVASCRIPT KODLARI (TÜM ETKİLEŞİM VE LOCALSTORAGE YÖNETİMİ) -->
+    <!-- 2. POPUP: ÖDÜLLÜ REKLAM MODAL (+5 HAK) -->
+    <div id="rewardAdModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl border border-slate-200">
+            <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto text-xl">
+                <i class="fa-solid fa-gift"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-slate-900 text-base">+5 Soru Hakkı Kazan</h3>
+                <p class="text-xs text-slate-500 mt-1">Aşağıdaki reklamı 10 saniye görüntüleyerek anında ekstra 5 soru hakkı kazanabilirsin.</p>
+            </div>
+
+            <!-- Reklam Alanı Simülasyonu -->
+            <div class="bg-slate-100 border-2 border-dashed border-slate-300 rounded-xl p-6 text-slate-400 text-xs flex flex-col items-center justify-center min-h-[140px]">
+                <i class="fa-solid fa-rectangle-ad text-3xl mb-1 text-slate-300"></i>
+                <span>[ Google AdSense Ödüllü Reklam Alanı ]</span>
+            </div>
+
+            <!-- Geri Sayım & Ödül Butonu -->
+            <div>
+                <div id="adTimerText" class="text-xs font-bold text-indigo-600 mb-2">
+                    Lütfen bekleyin: <span id="adSeconds">10</span> saniye
+                </div>
+                <button id="claimRewardBtn" onclick="claimBonusReward()" disabled class="w-full bg-slate-300 text-slate-500 font-bold py-2.5 rounded-xl text-xs transition cursor-not-allowed">
+                    Ödülü Al (+5 Hak)
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Profil ID'sini cihazda (localStorage) tut
         let profileId = localStorage.getItem("okulai_profile_id");
         if (!profileId) {
             profileId = "stu_" + Math.random().toString(36).substring(2, 10);
             localStorage.setItem("okulai_profile_id", profileId);
         }
 
-        // Sayfa açıldığında kayıtlı ayarları geri yükle
+        let currentAiMode = localStorage.getItem("okulai_ai_mode") || "default";
+
         document.addEventListener("DOMContentLoaded", () => {
             const savedGrade = localStorage.getItem("okulai_grade");
             if (savedGrade) document.getElementById("gradeSelect").value = savedGrade;
@@ -243,11 +319,90 @@
             const savedToken = localStorage.getItem("okulai_api_token");
             if (savedToken) document.getElementById("apiTokenInput").value = savedToken;
 
+            switchAiMode(currentAiMode);
             updateQuotaBadge();
             loadMistakeHistory();
         });
 
-        // Ayar değişikliklerini kaydet
+        // AI Mod Değiştirme
+        function switchAiMode(mode) {
+            currentAiMode = mode;
+            localStorage.setItem("okulai_ai_mode", mode);
+            const defBtn = document.getElementById("modeDefaultBtn");
+            const cusBtn = document.getElementById("modeCustomBtn");
+            const keyBox = document.getElementById("customKeyBox");
+
+            if (mode === "default") {
+                defBtn.className = "flex-1 py-2 rounded-lg bg-white shadow-sm font-bold text-indigo-600 transition flex items-center justify-center gap-1.5";
+                cusBtn.className = "flex-1 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center justify-center gap-1.5";
+                keyBox.classList.add("hidden");
+                updateQuotaBadge();
+            } else {
+                cusBtn.className = "flex-1 py-2 rounded-lg bg-white shadow-sm font-bold text-indigo-600 transition flex items-center justify-center gap-1.5";
+                defBtn.className = "flex-1 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition flex items-center justify-center gap-1.5";
+                keyBox.classList.remove("hidden");
+                document.getElementById("quotaCount").innerText = "Sınırsız (Kişisel)";
+            }
+        }
+
+        function openKeyGuideModal() { document.getElementById("keyGuideModal").classList.remove("hidden"); }
+        function closeKeyGuideModal() { document.getElementById("keyGuideModal").classList.add("hidden"); }
+
+        // Ödüllü Reklam Sayacı
+        let adInterval = null;
+        function openRewardAdModal() {
+            document.getElementById("rewardAdModal").classList.remove("hidden");
+            let secondsLeft = 10;
+            const secSpan = document.getElementById("adSeconds");
+            const btn = document.getElementById("claimRewardBtn");
+            const timerText = document.getElementById("adTimerText");
+
+            btn.disabled = true;
+            btn.className = "w-full bg-slate-300 text-slate-500 font-bold py-2.5 rounded-xl text-xs transition cursor-not-allowed";
+            timerText.innerHTML = `Lütfen bekleyin: <span id="adSeconds">${secondsLeft}</span> saniye`;
+
+            if (adInterval) clearInterval(adInterval);
+            adInterval = setInterval(() => {
+                secondsLeft--;
+                secSpan.innerText = secondsLeft;
+                if (secondsLeft <= 0) {
+                    clearInterval(adInterval);
+                    timerText.innerHTML = `<span class="text-emerald-600">✓ Reklam tamamlandı! Ödülünüz hazır.</span>`;
+                    btn.disabled = false;
+                    btn.className = "w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-md";
+                }
+            }, 1000);
+        }
+
+        async function claimBonusReward() {
+            try {
+                const res = await fetch("/api/quota/bonus", { method: "POST" });
+                const data = await res.json();
+                if (res.ok) {
+                    document.getElementById("rewardAdModal").classList.add("hidden");
+                    alert("Tebrikler! +5 soru çözme hakkı hesabınıza eklendi.");
+                    updateQuotaBadge();
+                }
+            } catch (e) {
+                alert("Ödül alınırken bir hata oluştu.");
+            }
+        }
+
+        async function updateQuotaBadge() {
+            if (currentAiMode === "custom") {
+                document.getElementById("quotaCount").innerText = "Sınırsız";
+                return;
+            }
+            try {
+                const res = await fetch("/api/quota");
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById("quotaCount").innerText = data.remaining_quota;
+                }
+            } catch (e) {}
+        }
+
+        // Ayarları sakla
         document.getElementById("gradeSelect").addEventListener("change", (e) => localStorage.setItem("okulai_grade", e.target.value));
         document.getElementById("providerSelect").addEventListener("change", (e) => localStorage.setItem("okulai_provider", e.target.value));
         document.getElementById("apiTokenInput").addEventListener("input", (e) => localStorage.setItem("okulai_api_token", e.target.value.trim()));
@@ -264,20 +419,7 @@
             }
         }
 
-        // Kota durumunu getir
-        async function updateQuotaBadge() {
-            try {
-                const res = await fetch("/api/quota");
-                if (res.ok) {
-                    const data = await res.json();
-                    document.getElementById("quotaCount").innerText = data.remaining_quota;
-                }
-            } catch (e) {
-                console.error(e);
-            }
-        }
-
-        // Görsel Seçme ve Önizleme
+        // Görsel Seçme
         let selectedFile = null;
         function previewImage(event) {
             const file = event.target.files[0];
@@ -293,7 +435,7 @@
             }
         }
 
-        // Form Gönderme ve Analiz
+        // Form Gönderme
         document.getElementById("analyzeForm").addEventListener("submit", async (e) => {
             e.preventDefault();
             if (!selectedFile) {
@@ -301,41 +443,32 @@
                 return;
             }
 
-            const token = document.getElementById("apiTokenInput").value.trim();
-            if (!token) {
-                alert("Lütfen yukarıdaki alana seçtiğiniz yapay zekanın API Token'ını girin!");
-                return;
-            }
-
-            const provider = document.getElementById("providerSelect").value;
-            const grade = document.getElementById("gradeSelect").value;
-
             const formData = new FormData();
             formData.append("image", selectedFile);
-            formData.append("provider", provider);
-            formData.append("api_token", token);
-            formData.append("grade", grade);
+            formData.append("grade", document.getElementById("gradeSelect").value);
             formData.append("profile_id", profileId);
+
+            if (currentAiMode === "custom") {
+                const token = document.getElementById("apiTokenInput").value.trim();
+                if (!token) {
+                    alert("Kendi API anahtarı modunu seçtiniz fakat token girmediniz. Lütfen tokeninizi yazın veya 'Varsayılan' moda geçin.");
+                    return;
+                }
+                formData.append("provider", document.getElementById("providerSelect").value);
+                formData.append("api_token", token);
+            }
 
             document.getElementById("loadingBox").classList.remove("hidden");
             document.getElementById("resultBox").classList.add("hidden");
             document.getElementById("submitBtn").disabled = true;
 
             try {
-                const res = await fetch("/api/analyze", {
-                    method: "POST",
-                    body: formData
-                });
-
+                const res = await fetch("/api/analyze", { method: "POST", body: formData });
                 const data = await res.json();
-                if (!res.ok) {
-                    throw new Error(data.detail || "Analiz sırasında bir hata meydana geldi.");
-                }
+                if (!res.ok) throw new Error(data.detail || "Analiz sırasında hata oluştu.");
 
-                // Kalan kotayı güncelle
                 document.getElementById("quotaCount").innerText = data.remaining_quota;
 
-                // Sonuçları bas
                 const a = data.analysis;
                 document.getElementById("resErrorRisk").innerText = a.identified_mistake_risk || "Eksik bilgi tespit edilmedi.";
                 document.getElementById("resSolution").innerText = a.step_by_step_solution || "";
@@ -343,7 +476,7 @@
                 document.getElementById("resAdvice").innerText = a.advice || "";
 
                 document.getElementById("resultBox").classList.remove("hidden");
-                loadMistakeHistory(); // Hafızayı yenile
+                loadMistakeHistory();
             } catch (err) {
                 alert(err.message);
             } finally {
@@ -352,7 +485,6 @@
             }
         });
 
-        // Geçmiş Hataları Çek
         async function loadMistakeHistory() {
             try {
                 const res = await fetch(`/api/profile/mistakes?profile_id=${profileId}`);
@@ -373,12 +505,9 @@
                         </div>
                     `).join("");
                 }
-            } catch (e) {
-                console.error(e);
-            }
+            } catch (e) {}
         }
 
-        // Ders Kitabı ve İnternet Araması
         async function performSearch() {
             const query = document.getElementById("searchInput").value.trim();
             const grade = document.getElementById("gradeSelect").value;
@@ -395,7 +524,6 @@
             try {
                 const res = await fetch("/api/search", { method: "POST", body: form });
                 const data = await res.json();
-
                 let html = "";
                 if (data.textbook_results && data.textbook_results.length > 0) {
                     html += `<h4 class="font-bold text-xs text-indigo-700 uppercase tracking-wider mb-2">MEB Ders Kitabı Eşleşmeleri</h4>`;
@@ -408,7 +536,6 @@
                         `;
                     });
                 }
-
                 if (data.web_results && data.web_results.length > 0) {
                     html += `<h4 class="font-bold text-xs text-slate-500 uppercase tracking-wider my-2">Web Maarif Kaynakları</h4>`;
                     data.web_results.forEach(w => {
@@ -420,10 +547,7 @@
                         `;
                     });
                 }
-
-                if (!html) {
-                    html = `<p class="text-xs text-slate-400 py-2">Eşleşen sonuç bulunamadı.</p>`;
-                }
+                if (!html) html = `<p class="text-xs text-slate-400 py-2">Eşleşen sonuç bulunamadı.</p>`;
                 resultsDiv.innerHTML = html;
             } catch (e) {
                 resultsDiv.innerHTML = `<p class="text-xs text-red-500">Arama yapılırken hata oluştu.</p>`;
