@@ -1,7 +1,7 @@
 from datetime import date
 from okul.database import db_session
 
-BASE_DAILY_LIMIT = 10  # Token girmeyenler için varsayılan günlük limit
+BASE_DAILY_LIMIT = 10
 
 def get_quota_details(ip_address: str, device_cookie: str) -> dict:
     today_str = date.today().isoformat()
@@ -22,7 +22,6 @@ def get_quota_details(ip_address: str, device_cookie: str) -> dict:
         return {"limit": total_limit, "used": max_used, "remaining": remaining}
 
 def check_and_use_quota(ip_address: str, device_cookie: str, is_admin: bool = False, custom_token_used: bool = False) -> tuple[bool, int]:
-    """Kendi API anahtarını kullananlardan veya adminden kota düşmez (Sınırsızdır)."""
     if is_admin or custom_token_used:
         return True, 999999
 
@@ -56,8 +55,19 @@ def check_and_use_quota(ip_address: str, device_cookie: str, is_admin: bool = Fa
 
         return True, (total_limit - new_count)
 
+def refund_quota(ip_address: str, device_cookie: str):
+    """Alakasız resim yüklendiğinde harcanan 1 hakkı kullanıcıya iade eder."""
+    today_str = date.today().isoformat()
+    keys = [f"ip_{ip_address}", f"dev_{device_cookie}"]
+    with db_session() as conn:
+        cursor = conn.cursor()
+        for key in keys:
+            cursor.execute("SELECT request_count FROM daily_quotas WHERE tracking_key = ? AND last_date = ?", (key, today_str))
+            row = cursor.fetchone()
+            if row and row["request_count"] > 0:
+                cursor.execute("UPDATE daily_quotas SET request_count = request_count - 1 WHERE tracking_key = ?", (key,))
+
 def add_bonus_quota(ip_address: str, device_cookie: str, amount: int = 5) -> int:
-    """Reklam izleyen kullanıcıya günlük +5 hak hediye eder."""
     today_str = date.today().isoformat()
     keys = [f"ip_{ip_address}", f"dev_{device_cookie}"]
     with db_session() as conn:
