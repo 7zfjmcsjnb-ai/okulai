@@ -60,9 +60,16 @@ def init_db():
         CREATE TABLE IF NOT EXISTS daily_quotas (
             tracking_key TEXT PRIMARY KEY,
             request_count INTEGER DEFAULT 0,
+            bonus_count INTEGER DEFAULT 0,
             last_date TEXT
         )
         """)
+        # Eski veritabanı varsa bonus_count kolonunu ekle
+        try:
+            cursor.execute("ALTER TABLE daily_quotas ADD COLUMN bonus_count INTEGER DEFAULT 0")
+        except Exception:
+            pass
+
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS book_pages (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
